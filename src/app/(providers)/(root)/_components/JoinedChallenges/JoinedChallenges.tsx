@@ -9,7 +9,9 @@ import React from 'react';
 const JoinedChallengesLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <>
-      <h5 className="text-white/50 text-sm">챌린지</h5>
+      <Link href={'/challenges'}>
+        <h5 className="text-white/50 text-sm hover:shadow-md hover:font-bold">챌린지</h5>
+      </Link>
       {children}
     </>
   );
@@ -17,7 +19,7 @@ const JoinedChallengesLayout = ({ children }: { children: React.ReactNode }) => 
 
 const JoinedChallenges = () => {
   const supabase = createClient();
-  const { data: joinedChallenges } = useQuery({
+  const { data: joinedChallenges, error } = useQuery({
     queryKey: ['joinedChallenge'],
     queryFn: () => api.dashboard.getJoinedChallenges(supabase),
   });
@@ -32,7 +34,7 @@ const JoinedChallenges = () => {
     );
   }
 
-  if (joinedChallenges.error) {
+  if (error) {
     return (
       <JoinedChallengesLayout>
         <div className="text-red-300 text-sm">
@@ -46,23 +48,27 @@ const JoinedChallenges = () => {
   if (joinedChallenges.data === null || joinedChallenges.data.length === 0) {
     return (
       <JoinedChallengesLayout>
-        <p className="text-white/50 text-sm">참여 중인 챌린지가 없습니다.</p>
+        <p className="text-white/50 text-xs">참여 중인 챌린지가 없습니다.</p>
       </JoinedChallengesLayout>
     );
   }
 
   return (
     <JoinedChallengesLayout>
-      <ul className="w-full text-sm text-white grid gap-y-4">
-        {joinedChallenges.data.slice(0, 3).map(({ id, challenges, challengeId }) => (
-          <Link
-            className="w-full line-clamp-1 h-5 break-words hover:shadow-md hover:font-bold"
-            key={id}
-            href={`/challenges/${challengeId}/detail`}
-          >
-            <li>{challenges?.title || '제목 없음'}</li>
-          </Link>
-        ))}
+      <ul className="w-full text-sm text-white grid grid-cols-1 sm:grid-cols-2 gap-y-5">
+        {joinedChallenges.data.slice(0, 6).map(({ id, challenges, challengeId }) => {
+          if (challenges?.isProgress === 'RUN') {
+            return (
+              <Link
+                className="w-full line-clamp-1 h-5 break-words hover:font-bold"
+                key={id}
+                href={`/challenges/${challengeId}/detail`}
+              >
+                <li>{challenges?.title || '제목 없음'}</li>
+              </Link>
+            );
+          }
+        })}
       </ul>
     </JoinedChallengesLayout>
   );

@@ -3,15 +3,16 @@
 import Input from '@/components/Input';
 import { EssentialInfoFormProps, FormState } from '@/types/auth';
 import { useCallback, useMemo } from 'react';
+import { useDebounce } from '../../../../../../hooks/useDebounce';
 import { validatePassword } from '../../../_utils/validatePassword';
-import { useDebounce } from '../../_hooks/useDebounce';
 
 const EssentialInfoForm = ({ formState, setFormState, checkDuplicate }: EssentialInfoFormProps) => {
   const validationRules = useMemo(
     () => ({
       email: (value: string) => {
         if (value.length < 3) return '이메일은 3자 이상이어야 합니다.';
-        if (!value.includes('@')) return '유효한 이메일 주소를 입력해주세요.';
+        const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
+        if (!emailRegex.test(value)) return '유효한 이메일 주소를 입력해주세요.';
         return null;
       },
       password: validatePassword,
@@ -141,8 +142,8 @@ const EssentialInfoForm = ({ formState, setFormState, checkDuplicate }: Essentia
   return (
     <form className="flex flex-col gap-4 items-center justify-center w-full mt-10">
       <div className="flex flex-col w-full  justify-between content-between">
-        <div className="flex flex-col gap-4">
-          <div className="flex flex-col items-center w-full px-4">
+        <div className="flex flex-col gap-4 mb-10">
+          <div className="flex flex-col items-center w-full">
             <div className="w-full">
               <div className="flex w-full items-end">
                 <Input
@@ -151,7 +152,7 @@ const EssentialInfoForm = ({ formState, setFormState, checkDuplicate }: Essentia
                   placeholder="이메일을 입력해 주세요."
                   value={formState.email.value}
                   onChange={handleChange}
-                  autoComplete="email"
+                  autoComplete="off"
                   success={formState.email.successMessage}
                   error={formState.email.error}
                   required
@@ -159,7 +160,7 @@ const EssentialInfoForm = ({ formState, setFormState, checkDuplicate }: Essentia
               </div>
             </div>
           </div>
-          <div className="flex flex-col items-center w-full px-4">
+          <div className="flex flex-col items-center w-full">
             <div className="w-full">
               <Input
                 label="비밀번호"
@@ -176,7 +177,7 @@ const EssentialInfoForm = ({ formState, setFormState, checkDuplicate }: Essentia
             </div>
           </div>
 
-          <div className="flex flex-col items-center w-full px-4">
+          <div className="flex flex-col items-center w-full">
             <div className="w-full">
               <Input
                 label="비밀번호 확인"
@@ -193,6 +194,9 @@ const EssentialInfoForm = ({ formState, setFormState, checkDuplicate }: Essentia
             </div>
           </div>
         </div>
+        <ul className="list-disc w-full px-4 text-white/50 text-xs font-normal">
+          <li>대문자, 특수문자 반드시 1회 포함되어야 합니다.</li>
+        </ul>
       </div>
     </form>
   );

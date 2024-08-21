@@ -11,6 +11,7 @@ const SlideItemVariants = cva('border border-white/10 w-[270px] h-[270px] slide-
       prev: 'blur-[4px] scale-75 translate-x-5',
       next: 'blur-[4px] scale-75 -translate-x-5',
       normal: 'blur-[6px] scale-75',
+      dummy: 'opacity-0',
     },
     defaultVariants: {
       pos: 'normal',
@@ -20,37 +21,39 @@ const SlideItemVariants = cva('border border-white/10 w-[270px] h-[270px] slide-
 
 interface SlideItemProps {
   challenge: TChallenge;
+
   index: number;
   activeIndex: number;
 }
 
 const SlideItem = ({ challenge, index, activeIndex }: SlideItemProps) => {
   const pos =
-    index === activeIndex
+    challenge.id === -1 || challenge.id === -5
+      ? 'dummy'
+      : index === activeIndex
       ? 'active'
       : index === activeIndex - 1
       ? 'prev'
       : index === activeIndex + 1
       ? 'next'
       : 'normal';
-  console.log(challenge.id, index);
 
   return (
     <div className={SlideItemVariants({ pos })}>
       <div className="flex flex-col gap-3 items-start">
         <div className="flex gap-2">
           <div className="w-7 h-7 bg-gray-500 rounded-md"></div>
-          <h3 className="text-xl font-semibold">{challenge.title}</h3>
+          <h3 className="text-xl font-semibold truncate w-52">{challenge.title}</h3>
         </div>
         <div className="flex text-sm gap-3 bg-white/10 px-[8px] py-[3px] rounded-[4px]">
           <p className="text-primary-100">참여 {challenge.participants}</p>
-          <p>인증 12</p>
+          <p>인증 {challenge.verifications}</p>
         </div>
       </div>
       <div className="w-full flex flex-col gap-2">
         <div className="flex">
           <Bullet />
-          <p className="text-[16px] font-semibold">{challenge.content}</p>
+          <p className="text-[16px] font-semibold truncate">{challenge.content}</p>
         </div>
 
         <p className="text-[12px] text-white/50 font-light">

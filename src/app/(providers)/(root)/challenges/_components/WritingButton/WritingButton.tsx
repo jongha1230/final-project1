@@ -9,8 +9,8 @@ const scrollButtonVariant = cva('transition-all duration-300 overflow-hidden whi
   variants: {
     dir: {
       still: 'pl-1 w-[112px]',
-      up: 'pl-1 w-[112px]',
       down: 'w-0 text-transparent',
+      up: 'pl-1 w-[112px]',
     },
   },
 });
@@ -20,7 +20,7 @@ const WritingButton = () => {
 
   return (
     <Link href="/challenges/register">
-      <div className="bg-black rounded-full px-4 h-[60px] flex justify-start items-center absolute right-4 bottom-20 overflow-hidden z-50">
+      <div className="bg-black rounded-full px-4 h-[60px] flex justify-start items-center  overflow-hidden z-10">
         <div className="w-7 h-7">
           <ChallengeIcon />
         </div>

@@ -2,10 +2,9 @@ export const dynamic = 'force-dynamic';
 import {
   fetchDataByInfinityQuery,
   fetchVerificationTotalData,
+  getChallengeWithParticipants,
 } from '@/app/(providers)/(root)/challenges/[id]/verification/_hooks/useVerification';
 import Button from '@/components/Button';
-import TitleHeader from '@/components/PrevButtonAndTitleHeader/PrevButtonAndTitleHeader';
-import Mobile from '@/layouts/Mobile';
 import { createClient } from '@/supabase/server';
 import { verificationsType } from '@/types/challenge';
 import { dehydrate, HydrationBoundary, QueryClient } from '@tanstack/react-query';
@@ -30,22 +29,27 @@ const ChallengeVerificationListPage = async ({ params }: { params: { id: string 
   });
 
   const counts = await fetchVerificationTotalData(supabase, params.id);
+  const cData = await getChallengeWithParticipants(supabase, params.id);
+
+  // console.log(cData?.isProgress);
+
   const bottomButton = (
-    <Link className="flex-1" href={`/challenges/${params.id}/verification/register`}>
-      <Button>인증하기</Button>
-    </Link>
+    <div className="w-full ">
+      {cData?.isProgress === 'RUN' ? (
+        <Link className="flex-1 " href={`/challenges/${params.id}/verification/register`}>
+          <Button>인증하기</Button>
+        </Link>
+      ) : (
+        <Button disabled>아직 시작하지 않았어요!</Button>
+      )}
+    </div>
   );
 
   return (
-    <div>
+    <div className="relative">
       <HydrationBoundary state={dehydrate(queryClient)}>
-        <Mobile
-          headerLayout={<TitleHeader>챌린지 인증 목록</TitleHeader>}
-          showFooter={false}
-          bottomButton={bottomButton}
-        >
-          <VerificationList counts={counts} />
-        </Mobile>
+        <VerificationList counts={counts} title={cData?.title ?? '챌린지 이름을 불러오지 못했어요..'} />
+        {cData?.isParticipant && bottomButton}
       </HydrationBoundary>
     </div>
   );

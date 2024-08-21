@@ -4,6 +4,7 @@ import dayjs from 'dayjs';
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
 import { create } from 'zustand';
+import useDateStore from './date.store';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -28,13 +29,21 @@ interface ExerciseStore {
   setExerciseType: (type: ExerciseType) => void;
   addInput: () => void;
   deleteInput: (index: number) => void;
+  clearRecord: () => void;
 }
+const getInitialState = (): ExerciseRecord => ({
+  date: useDateStore.getState().date,
+  name: '',
+  memo: '',
+  record: [{ weight: 0, reps: 0 }],
+  exerciseType: 'weight',
+});
 
 export const useExerciseStore = create<ExerciseStore>((set) => ({
   record: exerciseInitialState,
   isBookMark: false,
-  cardioInputs: [{ minutes: 0, distance: 0 }],
-  weightInputs: [{ weight: 0, reps: 0 }],
+  cardioInputs: [{ minutes: null, distance: null }],
+  weightInputs: [{ weight: null, reps: null }],
   exerciseType: 'weight',
   setRecord: (update) =>
     set((state) => {
@@ -66,25 +75,35 @@ export const useExerciseStore = create<ExerciseStore>((set) => ({
   addInput: () =>
     set((state) => {
       if (state.exerciseType === 'cardio') {
-        return { cardioInputs: [...state.cardioInputs, { minutes: 0, distance: 0 }] };
+        return { cardioInputs: [...state.cardioInputs, { minutes: null, distance: null }] };
       } else {
-        return { weightInputs: [...state.weightInputs, { weight: 0, reps: 0 }] };
+        return { weightInputs: [...state.weightInputs, { weight: null, reps: null }] };
       }
     }),
   deleteInput: (index) =>
     set((state) => {
       if (state.exerciseType === 'cardio') {
         if (state.cardioInputs.length <= 1) {
-          alert('You need to have at least one input');
+          alert('최소한 한 개의 세트는 유지해야 합니다.');
           return state;
         }
         return { cardioInputs: state.cardioInputs.filter((_, i) => i !== index) };
       } else {
         if (state.weightInputs.length <= 1) {
-          alert('You need to have at least one input');
+          alert('최소한 한 개의 세트는 유지해야 합니다.');
           return state;
         }
         return { weightInputs: state.weightInputs.filter((_, i) => i !== index) };
       }
+    }),
+  clearRecord: () =>
+    set((state) => {
+      const newRecord = getInitialState();
+      return {
+        record: newRecord,
+        cardioInputs: [{ minutes: null, distance: null }],
+        weightInputs: [{ weight: null, reps: null }],
+        exerciseType: state.exerciseType,
+      };
     }),
 }));

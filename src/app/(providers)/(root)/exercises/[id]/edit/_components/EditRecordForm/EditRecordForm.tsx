@@ -1,6 +1,7 @@
 'use client';
 import Button from '@/components/Button';
 import Input from '@/components/Input';
+import { useModal } from '@/contexts/modal.context/modal.context';
 import { ExercisesQueryKeys } from '@/hooks/exercises/queries';
 import {
   useGetExerciseBookmarks,
@@ -11,7 +12,7 @@ import {
 import Memo from '@/icons/Memo';
 import Star from '@/icons/Star';
 import { useExerciseStore } from '@/stores/exercise.store';
-import { ExerciseType } from '@/types/exercises';
+import { CardioInput, ExerciseType, RecordData, WeightInput } from '@/types/exercises';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
@@ -23,9 +24,10 @@ type EditRecordFormProps = {
 
 const EditRecordForm = ({ exerciseId }: EditRecordFormProps) => {
   const router = useRouter();
+  const modal = useModal();
   const queryClient = useQueryClient();
   const { record, setRecord } = useExerciseStore();
-  const [bookmarkedExercises, setBookmarkedExercises] = useState<string[]>([]);
+  const [bookmarkedExercises, setBookmarkedExercises] = useState<RecordData[]>([]);
 
   const { mutate: update } = useUpdateExercise();
   const { mutate: toggleBookmark } = useToggleBookmark();
@@ -34,7 +36,7 @@ const EditRecordForm = ({ exerciseId }: EditRecordFormProps) => {
 
   useEffect(() => {
     if (bookmarkData) {
-      setBookmarkedExercises(bookmarkData.map((item) => item.exerciseName));
+      setBookmarkedExercises(bookmarkData);
     }
   }, [bookmarkData]);
 
@@ -65,8 +67,25 @@ const EditRecordForm = ({ exerciseId }: EditRecordFormProps) => {
   const handleSubmit = async () => {
     // 데이터가 없는 경우 빠르게 반환
 
-    if (!record.date || record.record.length === 0) {
-      alert('운동 이름, 날짜, 세트는 필수 입력 사항입니다.');
+    const isCardioInput = (input: CardioInput | WeightInput): input is CardioInput => {
+      return 'minutes' in input || 'distance' in input;
+    };
+
+    const isWeightInput = (input: CardioInput | WeightInput): input is WeightInput => {
+      return 'weight' in input || 'reps' in input;
+    };
+
+    const isValidRecord = record.record.some((set) => {
+      if (isCardioInput(set)) {
+        return (set.minutes && set.minutes > 0) || (set.distance && set.distance > 0);
+      } else if (isWeightInput(set)) {
+        return (set.weight && set.weight > 0) || (set.reps && set.reps > 0);
+      }
+      return false;
+    });
+
+    if (!record.date || !isValidRecord) {
+      modal.alert(['운동 이름, 날짜, 세트는 필수 입력 사항입니다.']);
       return;
     }
 
@@ -78,7 +97,7 @@ const EditRecordForm = ({ exerciseId }: EditRecordFormProps) => {
         { exerciseData, exerciseId },
         {
           onSuccess: () => {
-            alert('수정 성공했다!!!!!!!!!!!');
+            modal.alert(['수정에 성공했습니다']);
             router.push('/exercises');
           },
           onError: (error: any) => {
@@ -91,13 +110,13 @@ const EditRecordForm = ({ exerciseId }: EditRecordFormProps) => {
     }
   };
 
-  const handleToggleBookmark = (exerciseName: string) => {
-    toggleBookmark(exerciseName, {
+  const handleToggleBookmark = (recordToToggle: RecordData) => {
+    toggleBookmark(recordToToggle, {
       onSuccess: (data) => {
         if (data.isBookmarked) {
-          setBookmarkedExercises((prev) => [...prev, exerciseName]);
+          setBookmarkedExercises((prev) => [...prev, recordToToggle]);
         } else {
-          setBookmarkedExercises((prev) => prev.filter((name) => name !== exerciseName));
+          setBookmarkedExercises((prev) => prev.filter((item) => item.name !== recordToToggle.name));
         }
         queryClient.invalidateQueries(ExercisesQueryKeys.bookmark() as any);
       },
@@ -108,26 +127,27 @@ const EditRecordForm = ({ exerciseId }: EditRecordFormProps) => {
   };
 
   const bookmarkListOptions = bookmarkData?.map((item) => ({
-    value: item.exerciseName,
+    value: item.name,
     icon: (
       <Star
-        width={24}
-        height={24}
+        width={20}
+        height={20}
         style={{
-          fill: bookmarkedExercises.includes(item.exerciseName) ? '#12F287' : 'none',
+          fill: bookmarkedExercises.some((bookmark) => bookmark.name === item.name) ? '#12F287' : 'none',
         }}
         onClick={(e) => {
           e.stopPropagation();
-          handleToggleBookmark(item.exerciseName);
+          handleToggleBookmark(item);
         }}
       />
     ),
+    onClick: (e: React.MouseEvent) => {
+      setRecord(item);
+    },
   }));
 
-  console.log(record.date);
   return (
-    <div className="flex flex-col gap-5 p-5">
-      <h3 className="text-white">운동 이름</h3>
+    <div className="flex flex-col gap-4 p-4 pt-6">
       <Input
         label="운동 이름"
         placeholder="운동 이름을 입력해 주세요."
@@ -135,25 +155,32 @@ const EditRecordForm = ({ exerciseId }: EditRecordFormProps) => {
         onChange={handleNameChange}
         inputType="select"
         dropdownOptions={bookmarkListOptions}
+        autoComplete="off"
         icon={
           <Star
             style={{
-              fill: bookmarkedExercises.includes(record.name) ? '#12F287' : 'none',
+              fill: bookmarkedExercises.some((bookmark) => bookmark.name === record.name) ? '#12F287' : 'none',
             }}
-            width={24}
-            height={24}
+            width={20}
+            height={20}
             onClick={(e) => {
               e.stopPropagation();
               if (record.name) {
-                handleToggleBookmark(record.name);
+                handleToggleBookmark(record);
               }
             }}
           />
         }
       />
-      <h3 className="text-white">날짜 선택</h3>
-      <Input inputType="date" value={record.date} onChange={handleDateChange} className="p-2 rounded" />
       <Input
+        label="날짜 선택"
+        inputType="date"
+        value={record.date}
+        onChange={handleDateChange}
+        className="p-2 rounded"
+      />
+      <Input
+        label="메모"
         placeholder="주의사항, 다짐 등을 작성해 주세요"
         value={record.memo}
         onChange={handleMemoChange}

@@ -1,8 +1,10 @@
 'use client';
 
+import { useGetChallengeCount } from '@/hooks/challenge/useChallenge';
 import useIntersect from '@/hooks/useIntersect';
 import api from '@/service/service';
-import { useChallengeCategoryStore } from '@/stores/stores';
+
+import { useChallengeFilterStore } from '@/stores/challengeFilter.store';
 import { Tables } from '@/types/supabase';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import Link from 'next/link';
@@ -10,10 +12,12 @@ import ChallengeItem from '../ChallengeItem';
 import SkeletonCardList from '../Skeleton/Card.skeleton';
 
 const ChallengeList = () => {
-  const category = useChallengeCategoryStore((state) => state.category);
+  const filter = useChallengeFilterStore((state) => state.filter);
 
   type TChallenge = Tables<'challenges'>;
   const LIMIT = 6;
+
+  const { data: count, error } = useGetChallengeCount({ filter });
 
   const {
     data: challenges,
@@ -22,8 +26,8 @@ const ChallengeList = () => {
     fetchNextPage,
     hasNextPage,
   } = useInfiniteQuery({
-    queryKey: ['challenges', 'popular', category],
-    queryFn: ({ pageParam }) => api.challenge.getPaginationChallenges({ category, page: pageParam, limit: LIMIT }),
+    queryKey: ['challenges', 'popular', filter],
+    queryFn: ({ pageParam }) => api.challenge.getPaginationChallenges({ filter, page: pageParam, limit: LIMIT }),
     initialPageParam: 1,
     getNextPageParam: (lastPage) => lastPage.nextPage,
   });
@@ -37,13 +41,13 @@ const ChallengeList = () => {
 
   return (
     <>
-      <p className="text-white/50 text-[12px]">총 {999}개의 챌린지가 있습니다.</p>
+      <p className="text-white/50 text-[12px]">총 {count}개의 챌린지가 있습니다.</p>
       <div className="w-full h-full">
         <ul className="flex flex-col gap-2 overflow-scroll scroll">
           {!challenges?.pages || isPending ? (
             <SkeletonCardList length={1} />
           ) : challenges?.pages[0]?.error ? (
-            <p>데이터가 없습니다</p>
+            <p className="w-full flex justify-center py-4 text-white/70">해당 챌린지가 없습니다.</p>
           ) : (
             challenges.pages.map((page) =>
               page.data.map((challenge: TChallenge) => (
@@ -55,12 +59,11 @@ const ChallengeList = () => {
               )),
             )
           )}
-
           {hasNextPage && (
             <>
-              <div className="h-24"></div>
+              <div className="h-12"></div>
               <div ref={ref}></div>
-              <div className="h-36"></div>
+              <div className="h-18"></div>
             </>
           )}
         </ul>

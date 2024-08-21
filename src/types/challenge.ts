@@ -1,6 +1,12 @@
 import { Tables } from './supabase';
 
-export type verificationsType = Tables<'challengeVerify'> & { users: Tables<'users'>; imageURLs: string[] };
+export type verificationsType = Tables<'challengeVerify'> & {
+  users: Tables<'users'>;
+  imageURLs: string[];
+  likes: { verificationId: number; userId: string }[] | [];
+  likes_count: number;
+  isLiked: boolean;
+};
 export type verificationsCountType = {
   totalVerifications: number | undefined;
   totalUsers: number;
@@ -17,7 +23,7 @@ export type joinedChallengesDataType =
         userId: string;
         challenges: {
           title: string;
-          isProgress: boolean;
+          isProgress: 'LF' | 'RUN' | 'END';
         } | null;
       }[];
       error: null;
@@ -36,3 +42,18 @@ export type joinedMyChallengesDataType =
       error: null;
       details: null;
     };
+
+export type ChallengeStatusTypes = 'all' | 'LF' | 'RUN' | 'END';
+export type ChallengeOrderTypes = 'startDate' | 'endDate' | 'participants' | 'verifications';
+export type ChallengeCategoryTypes = 'all' | 'exercise' | 'diet' | 'lifestyle' | 'etc';
+
+export interface ChallengeFilterTypes {
+  searchValue: string;
+  categories: ChallengeCategoryTypes[];
+  status: ChallengeStatusTypes[];
+  order: ChallengeOrderTypes[];
+}
+
+export type ChallengeFilterStandardTypes = 'categories' | 'status' | 'order';
+
+export type ChallengeFilterInputTypes = ChallengeStatusTypes | ChallengeOrderTypes | ChallengeCategoryTypes;
