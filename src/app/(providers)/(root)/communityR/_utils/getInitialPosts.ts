@@ -46,7 +46,7 @@ export async function getInitialPosts(
     return undefined;
   }
 
-  const processedData = data.map((post) => ({
+  const processedData = data.map((post: any) => ({
     ...post,
     user: {
       id: post.user_id,
