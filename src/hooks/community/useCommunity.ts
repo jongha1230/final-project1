@@ -36,6 +36,34 @@ export const useGetCommunityPosts = ({ category, categories, initialData }: UseG
   };
 };
 
+export const useGetCommunityPosts1 = ({ category, categories, initialData }: UseGetCommunityPostsProps) => {
+  const queryClient = useQueryClient();
+
+  const query = useInfiniteQuery<PostsResponse, Error, InfiniteData<PostsResponse, number>>({
+    ...queryOptions.postst(category),
+    queryKey: communityQueryKeys.posts(category),
+    initialData: initialData
+      ? {
+          pages: [initialData],
+          pageParams: [1],
+        }
+      : undefined,
+  });
+
+  const fetchCategoryData = async () => {
+    const prefetchedCategories = queryClient.getQueryData(['prefetchedCategories']);
+    if (!prefetchedCategories) {
+      await Promise.all(categories.map((cat) => queryClient.prefetchInfiniteQuery(queryOptions.posts(cat))));
+      queryClient.setQueryData(['prefetchedCategories'], true);
+    }
+  };
+
+  return {
+    ...query,
+    fetchCategoryData,
+  };
+};
+
 // 커뮤니티 글 상세 조회
 export const useGetCommunityPostDetail = (postId: string, initialData: CommunityPostData) =>
   useQuery({

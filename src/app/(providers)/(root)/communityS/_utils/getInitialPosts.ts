@@ -15,7 +15,7 @@ export async function getInitialPosts(
   } = await supabase.auth.getSession();
 
   if (authError) {
-    console.error('Authentication error:', authError.message);
+    console.error('인증 오류:', authError.message);
     return undefined;
   }
 

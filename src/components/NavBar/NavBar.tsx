@@ -18,8 +18,8 @@ const NavBar = ({ className = '' }: NavBarProps) => {
   const navItems = [
     { icon: DashBoardIcon, text: '대시보드', href: '/' },
     { icon: CommunityIcon, text: '커뮤니티', href: '/community' },
-    { icon: ChallengeIcon, text: '챌린지', href: '/challenges' },
-    { icon: MyPageIcon, text: '마이페이지', href: '/mypage' },
+    { icon: ChallengeIcon, text: '챌린지', href: '/communityS' },
+    { icon: MyPageIcon, text: '마이페이지', href: '/communityT' },
   ];
 
   return (

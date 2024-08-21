@@ -3,7 +3,7 @@
 import Loading from '@/components/Loading/Loading';
 import NavBar from '@/components/NavBar';
 import { useGetUser } from '@/hooks/auth/useUsers';
-import { useGetCommunityPosts1 } from '@/hooks/community/useCommunity';
+import { useGetCommunityPosts } from '@/hooks/community/useCommunity';
 import { CommunityPostData } from '@/types/community';
 import Link from 'next/link';
 import { lazy, Suspense, useEffect, useState } from 'react';
@@ -26,7 +26,7 @@ const CommunityPostList = () => {
   const { data: user, error: userError } = useGetUser();
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, error, fetchCategoryData } =
-    useGetCommunityPosts1({
+    useGetCommunityPosts({
       category: selectedCategory,
       categories: categories.map((c) => c.value),
     });

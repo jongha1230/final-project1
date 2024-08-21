@@ -1,13 +1,12 @@
-import { createClient } from '@/supabase/server';
-
+import { createClient } from '@/supabase/client';
 import { PostsResponse } from '@/types/community';
 
-export async function getInitialPosts(
-  category: string = '전체',
-  page: number = 1,
-  limit: number = 6,
-): Promise<PostsResponse | undefined> {
+export async function test(page = 1, category = '전체'): Promise<PostsResponse> {
   const supabase = createClient();
+  const limit = 6;
+
+  const from = (page - 1) * limit;
+  const to = from + limit - 1;
 
   const {
     data: { session },
@@ -15,14 +14,10 @@ export async function getInitialPosts(
   } = await supabase.auth.getSession();
 
   if (authError) {
-    console.error('인증 오류:', authError.message);
-    return undefined;
+    throw new Error();
   }
 
   const userId = session?.user?.id;
-
-  const from = (page - 1) * limit;
-  const to = from + limit - 1;
 
   // 투표 카테고리의 최신 게시글 가져오기
   const { data: latestVotePost, error: voteError } = await supabase
@@ -34,7 +29,7 @@ export async function getInitialPosts(
     .single();
 
   if (voteError && voteError.code !== 'PGRST116') {
-    console.error('Error fetching latest vote post:', voteError.message);
+    throw Error;
   }
 
   // 일반 게시글
@@ -51,7 +46,7 @@ export async function getInitialPosts(
       answerCount:communityAnswer(count),
       isLiked:communityPostsLikes!left(id)
     `,
-    { count: 'planned' },
+    { count: 'exact' },
   );
 
   if (category && category !== '전체') {
@@ -67,8 +62,7 @@ export async function getInitialPosts(
   } = await query.eq('communityPostsLikes.userId', userId).range(from, to).order('createdAt', { ascending: false });
 
   if (postsError) {
-    console.error('Error fetching posts:', postsError.message);
-    return undefined;
+    throw Error;
   }
 
   const processedData = posts.map((post) => ({
@@ -76,7 +70,6 @@ export async function getInitialPosts(
     commentCount: post.category === 'Q&A 게시판' ? post.answerCount[0]?.count || 0 : post.commentCount[0]?.count || 0,
     isLiked: post.isLiked.length > 0,
   }));
-
   return {
     data: processedData,
     latestVotePost,

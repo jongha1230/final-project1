@@ -12,15 +12,16 @@ export async function GET(request: NextRequest) {
   const to = from + limit - 1;
 
   const {
-    data: { user },
+    data: { session },
     error: authError,
-  } = await supabase.auth.getUser();
+  } = await supabase.auth.getSession();
 
   if (authError) {
-    return NextResponse.json({ error: authError.message }, { status: 401 });
+    console.error('인증 오류:', authError.message);
+    return undefined;
   }
 
-  const userId = user?.id;
+  const userId = session?.user?.id;
 
   // 투표 카테고리의 최신 게시글 가져오기
   const { data: latestVotePost, error: voteError } = await supabase

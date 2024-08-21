@@ -1,3 +1,4 @@
+import { test } from '@/app/(providers)/(root)/communityS/_utils/test';
 import api from '@/service/service';
 import {
   CommentCreateData,
@@ -39,6 +40,20 @@ export const queryOptions = {
     queryFn: ({ pageParam = 1 }) => {
       const page = typeof pageParam === 'number' ? pageParam : 1;
       return api.community.getPosts({ pageParam: page, category });
+    },
+    initialPageParam: 1,
+    getNextPageParam: (lastPage: PostsResponse, allPages) => {
+      if (lastPage.data.length < lastPage.limit || allPages.length * lastPage.limit >= lastPage.totalCount) {
+        return undefined;
+      }
+      return allPages.length + 1;
+    },
+  }),
+  postst: (category: string): UseInfiniteQueryOptions<PostsResponse, Error, InfiniteData<PostsResponse, number>> => ({
+    queryKey: communityQueryKeys.posts(category),
+    queryFn: ({ pageParam = 1 }) => {
+      const page = typeof pageParam === 'number' ? pageParam : 1;
+      return test(page, category);
     },
     initialPageParam: 1,
     getNextPageParam: (lastPage: PostsResponse, allPages) => {
