@@ -1,5 +1,12 @@
 import { Answer, AnswerResponse, CommentData, CommunityPostData, PostsResponse } from '@/types/community';
-import { InfiniteData, useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  InfiniteData,
+  QueryClient,
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 import { communityQueryKeys, mutationOptions, queryOptions } from './queries';
 
 interface UseGetCommunityPostsProps {
@@ -61,6 +68,31 @@ export const useGetCommunityPosts1 = ({ category, categories, initialData }: Use
   return {
     ...query,
     fetchCategoryData,
+  };
+};
+
+const prefetchCommunityPosts = async (queryClient: QueryClient, categories: string[]) => {
+  const prefetchPromises = categories.map((category) =>
+    queryClient.prefetchInfiniteQuery(queryOptions.posts(category)),
+  );
+  await Promise.all(prefetchPromises);
+};
+
+export const useGetCommunityPosts2 = (category: string, categories: string[]) => {
+  const queryClient = useQueryClient();
+  const query = useInfiniteQuery(queryOptions.posts(category));
+
+  const prefetchAllCategories = async () => {
+    const prefetchedCategories = queryClient.getQueryData(['prefetchedCategories']);
+    if (!prefetchedCategories) {
+      await prefetchCommunityPosts(queryClient, categories);
+      queryClient.setQueryData(['prefetchedCategories'], true);
+    }
+  };
+
+  return {
+    ...query,
+    prefetchAllCategories,
   };
 };
 
