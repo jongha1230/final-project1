@@ -1,3 +1,6 @@
+import { getAcceptedAnswer } from '@/app/(providers)/(root)/community/[id]/_utils/getAcceptedAnswer';
+import { getAnswers } from '@/app/(providers)/(root)/community/[id]/_utils/getAnswers';
+import { getPostDetail } from '@/app/(providers)/(root)/community/[id]/_utils/getPostDetail';
 import { test } from '@/app/(providers)/(root)/communityS/_utils/test';
 import api from '@/service/service';
 import {
@@ -66,7 +69,7 @@ export const queryOptions = {
 
   postDetail: (postId: string) => ({
     queryKey: communityQueryKeys.postDetail(postId),
-    queryFn: () => api.community.getPostDetail(postId),
+    queryFn: () => getPostDetail(postId),
   }),
   comments: (postId: string) => ({
     queryKey: communityQueryKeys.comments(postId),
@@ -94,11 +97,11 @@ export const queryOptions = {
   }),
   answers: (questionId: string) => ({
     queryKey: communityQueryKeys.answers(questionId),
-    queryFn: () => api.community.getAnswers(questionId),
+    queryFn: () => getAnswers(questionId),
   }),
   acceptedAnswer: (questionId: string) => ({
     queryKey: communityQueryKeys.acceptedAnswer(questionId),
-    queryFn: () => api.community.getAcceptedAnswer(questionId),
+    queryFn: () => getAcceptedAnswer(questionId),
   }),
 };
 

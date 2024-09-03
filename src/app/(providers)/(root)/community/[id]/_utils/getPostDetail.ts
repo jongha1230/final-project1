@@ -1,4 +1,4 @@
-import { createClient } from '@/supabase/server';
+import { createClient } from '@/supabase/client';
 import { CommunityPostData } from '@/types/community';
 
 export async function getPostDetail(postId: string): Promise<CommunityPostData> {

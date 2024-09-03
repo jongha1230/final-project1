@@ -97,10 +97,9 @@ export const useGetCommunityPosts2 = (category: string, categories: string[]) =>
 };
 
 // 커뮤니티 글 상세 조회
-export const useGetCommunityPostDetail = (postId: string, initialData: CommunityPostData) =>
+export const useGetCommunityPostDetail = (postId: string) =>
   useQuery({
     ...queryOptions.postDetail(postId),
-    initialData,
   });
 
 // 커뮤니티 글 등록
@@ -273,8 +272,7 @@ export const useUpdateVote = () => {
 };
 
 // 답변 목록 조회
-export const useGetAnswers = (questionId: string, initialData: AnswerResponse) =>
-  useQuery({ ...queryOptions.answers(questionId), initialData });
+export const useGetAnswers = (questionId: string) => useQuery({ ...queryOptions.answers(questionId) });
 
 // 채택된 답변 조회
 export const useGetAcceptedAnswer = (questionId: string) => useQuery(queryOptions.acceptedAnswer(questionId));
