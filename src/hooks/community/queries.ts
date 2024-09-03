@@ -1,6 +1,6 @@
-import { getAcceptedAnswer } from '@/app/(providers)/(root)/community/_id/_utils/getAcceptedAnswer';
-import { getAnswers } from '@/app/(providers)/(root)/community/_id/_utils/getAnswers';
-import { getPostDetail } from '@/app/(providers)/(root)/community/_id/_utils/getPostDetail';
+import { getAcceptedAnswer } from '@/app/(providers)/(root)/community/[id]/_utils/getAcceptedAnswer';
+import { getAnswers } from '@/app/(providers)/(root)/community/[id]/_utils/getAnswers';
+import { getPostDetail } from '@/app/(providers)/(root)/community/[id]/_utils/getPostDetail';
 import { test } from '@/app/(providers)/(root)/communityS/_utils/test';
 import api from '@/service/service';
 import {
